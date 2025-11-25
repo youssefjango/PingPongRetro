@@ -32,17 +32,19 @@ internal void draw_rect_pxl(int x0, int y0, int x1, int y1, u32 color) {
 	}
 }
 
+global_variable float render_scale = 0.01f;
 internal void draw_rect(float x, float y, float half_size_x, float half_size_y, u32 color) {
 	
 	//relative to width/height
-	x *= renderState.height;
-	y *= renderState.height;
-	half_size_x *= renderState.height;
-	half_size_y *= renderState.height;
+	x *= renderState.height * render_scale;
+	y *= renderState.height * render_scale;
+	half_size_x *= renderState.height * render_scale;
+	half_size_y *= renderState.height * render_scale;
 
 	x += renderState.width / 2.f;
 	y += renderState.height / 2.f;
-	//transform to 4 points
+
+	// Change to pixels
 	int x0 = x - half_size_x;
 	int x1 = x + half_size_x;
 	int y0 = y - half_size_y;
