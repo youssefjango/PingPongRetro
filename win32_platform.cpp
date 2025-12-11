@@ -21,6 +21,7 @@ global_variable bool isRunning = true;
 
 LRESULT CALLBACK window_cb(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	LRESULT result = 0;
+
 	switch (uMsg) {
 		case WM_CLOSE:
 		case WM_DESTROY:
@@ -96,8 +97,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 #define process_button(b, vk)\
 case vk:{\
+input.buttons[b].changed = is_down != input.buttons[b].is_down;\
 input.buttons[b].is_down = is_down;\
-input.buttons[b].changed = true;\
 } break;
 					switch (vk_code) {
 						process_button(BUTTON_UP, VK_UP);
