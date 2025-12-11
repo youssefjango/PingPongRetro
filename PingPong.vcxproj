@@ -129,6 +129,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GameArtefact.cpp" />
+    <ClCompile Include="Paddle.cpp" />
     <ClCompile Include="PlatformCommon.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -150,7 +152,8 @@
     <ClCompile Include="win32_platform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Player.h" />
+    <ClInclude Include="GameArtefact.h" />
+    <ClInclude Include="Paddle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
