@@ -1,3 +1,4 @@
+#pragma once
 #include "Utility.cpp"
 
 #include <windows.h>
@@ -78,7 +79,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 		performance_freq = (float)perf.QuadPart;
 
 	}
-
+	initializeActors();
 	while (isRunning) {
 		MSG message;
 

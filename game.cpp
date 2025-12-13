@@ -1,20 +1,65 @@
+#include "Paddle.h"
+#include "Ball.h"
+#include "CONSTANTS.cpp"
+
 #define is_down(b) input->buttons[b].is_down
 #define pressed(b) (input->buttons[b].is_down && input->buttons[b].changed)
 #define released(b) (!input->buttons[b].is_down && input->buttons[b].changed)
 
-//Arena Data, to be added in futur class
-float arenaHalfSizeX = 85, arenaHalfSizeY = 45;
 
-//Player Data, to be added in a futur class with position update in future.
-float player_VerticalLevel, speed;
-float player_halfSizeY = 12.0f, player_halfSizeX = 2.5f;
-float const friction = 10.0f;
-float player_HorizontalPosition = -80.0f;
-float influenceFactor = 1.0f;//dictates how influent the y speed is on the ball when hitting.
-//Ball data, to be added in future ball class as well
-float ballPositionX, ballPositionY, ballSpeedY, ballSpeedX = -100.0f, ballAcceleration;
-float ballRadius = 1;
-float const originalBallX = 0.0f, originalBallY = 0.0f;
+
+Paddle* playerPaddle;
+Ball* ball;
+
+//Where all actors of the scene are initialized
+internal void initializeActors() {
+	playerPaddle = new Paddle(player_HorizontalPosition, player_StartingVerticalPosition
+		, player_Color, friction, influenceFactor);
+	ball = new Ball(originalBallX, originalBallY, ballColor, ballRadius);
+	ball->setSpeed(initialBallSpeedX, initialBallSpeedY);
+}
+
+//to be added as a function of the class Paddle in the futur.
+void handlePaddle(Paddle* p, float dt) {
+	if (p->getPosition().y + p->getHalfSizes().y > arenaHalfSizeY) {
+		p->setPosition(p->getPosition().x, arenaHalfSizeY - player_halfSizeY);
+		p->setSpeed(-p->getSpeed().y);
+	}
+	else if (p->getPosition().y - p->getHalfSizes().y < -arenaHalfSizeY) {
+		p->setPosition(p->getPosition().x, -arenaHalfSizeY + player_halfSizeY);
+		p->setSpeed(-p->getSpeed().y);
+	}
+	p->setAcceleration(p->getAcceleration().y - p->getSpeed().y * p->getFriction());
+	p->setPosition(p->getPosition().x, p->getPosition().y + p->getSpeed().y * dt + p->getAcceleration().y * dt * dt * 0.5f);
+	p->setSpeed(p->getSpeed().y + p->getAcceleration().y * dt);
+}
+
+bool isCollidingWithPaddle(Ball* b, Paddle* p) {
+	return b->getPosition().x + b->getRadius() < p->getPosition().x + p->getHalfSizes().x &&
+		   b->getPosition().x - b->getRadius() > p->getPosition().x - p->getHalfSizes().x &&
+		   b->getPosition().y + b->getRadius() < p->getPosition().y + p->getHalfSizes().y &&
+		   b->getPosition().y - b->getRadius() > p->getPosition().y - p->getHalfSizes().y;
+}
+
+//to be added as a function of the class ball in the futur.
+void handleBall(Ball* b, Paddle* p,float dt) {
+	b->setPosition(b->getPosition().x + b->getSpeed().x * dt, b->getPosition().y + b->getSpeed().y * dt);
+
+	if (b->getPosition().y + b->getRadius() > arenaHalfSizeY) {
+		b->setPosition(b->getPosition().x, arenaHalfSizeY - b->getRadius());
+		b->setSpeed(b->getSpeed().x, -b->getSpeed().y);
+	}
+	else if (b->getPosition().y - b->getRadius() < -arenaHalfSizeY) {
+		b->setPosition(b->getPosition().x, -arenaHalfSizeY + b->getRadius());
+		b->setSpeed(b->getSpeed().x, -b->getSpeed().y);
+	}
+
+	if (isCollidingWithPaddle(b, p)) {
+		b->setPosition(p->getPosition().x + p->getHalfSizes().x + b->getRadius(), b->getPosition().y);
+		b->setSpeed(-b->getSpeed().x, p->getInfluenceFactor() * p->getSpeed().y);
+	}
+
+}
 
 internal void simulate_game(Input* input, float dt) {
 	//background
@@ -22,65 +67,32 @@ internal void simulate_game(Input* input, float dt) {
 	//arena rectangle
 	draw_rect(0, 0, arenaHalfSizeX, arenaHalfSizeY, 0x000000);
 
-	float acceleration = 0.f;
-	if (is_down(BUTTON_UP)) acceleration += 2000;
-	else if (is_down(BUTTON_DOWN)) acceleration -= 2000;
+	playerPaddle->setAcceleration(0.0f);
+
+	if (is_down(BUTTON_UP)) playerPaddle->setAcceleration(playerPaddle->getAcceleration().y + 2000.0f);
+	else if (is_down(BUTTON_DOWN)) playerPaddle->setAcceleration(playerPaddle->getAcceleration().y - 2000.0f);
 	
 
-	draw_rect(80, 0, 2.5, 12, 0x6C9D9E);
+	//draw_rect(80, 0, 2.5, 12, 0x6C9D9E);
 	
 	//ball side
+	handleBall(ball, playerPaddle, dt);
 	
-	ballPositionX += ballSpeedX * dt;
-	ballPositionY += ballSpeedY * dt;
+	
+	
+	handlePaddle(playerPaddle, dt);
+	
+	
+	
+	draw_rect(ball->getPosition().x, ball->getPosition().y, ball->getRadius(), ball->getRadius(), ball->getColor());
 
-	if (ballPositionY + ballRadius > arenaHalfSizeY) {
-		ballPositionY = arenaHalfSizeY - ballRadius;
-		ballSpeedY *= -1;
-	} else if (ballPositionY - ballRadius < - arenaHalfSizeY) {
-		ballPositionY = - arenaHalfSizeY + ballRadius;
-		ballSpeedY *= -1;
-	}
-
-	if (ballPositionX + ballRadius < player_HorizontalPosition + player_halfSizeX &&
-		ballPositionX - ballRadius > player_HorizontalPosition - player_halfSizeX &&
-		ballPositionY + ballRadius < player_VerticalLevel + player_halfSizeY &&
-		ballPositionY - ballRadius > player_VerticalLevel - player_halfSizeY) {
-		
-		ballPositionX = player_HorizontalPosition + player_halfSizeX + ballRadius;
-		ballSpeedX *= -1;
-		ballSpeedY = influenceFactor * speed;
-	}
-
-	draw_rect(ballPositionX, ballPositionY, ballRadius, ballRadius, 0x00ff22);
-	
-	
-	
-	
-	
-	
-	//
-	//player side
-	if (player_VerticalLevel + player_halfSizeY > arenaHalfSizeY) {
-		player_VerticalLevel = arenaHalfSizeY - player_halfSizeY;
-		speed = -speed;
-	}
-	else if (player_VerticalLevel - player_halfSizeY < -arenaHalfSizeY) {
-		player_VerticalLevel = -arenaHalfSizeY + player_halfSizeY;
-		speed = -speed;
-	}
-	acceleration -= speed * friction;
-	player_VerticalLevel += speed * dt + acceleration * dt * dt * 0.5f;
-	speed += acceleration * dt;
-	
 	//GameMode Side
-	if (ballPositionX > arenaHalfSizeX + ballRadius * 1.5f || ballPositionX < - arenaHalfSizeX - ballRadius * 1.5f) { 
+	if (ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * 1.5f || ball->getPosition().x < -arenaHalfSizeX - ball->getRadius() * RESPAWN_OFFSET_FACTOR) {
 		//or to be split to take into account who won in future
-		ballPositionX = originalBallX;
-		ballPositionY = originalBallY;
-		ballSpeedY = 0;
-		ballSpeedX *= -1;
+		ball->setPosition(originalBallX, originalBallY);
+		ball->setSpeed(-ball->getSpeed().x, initialBallSpeedY);
 	}
 
-	draw_rect(-80, player_VerticalLevel, player_halfSizeX, player_halfSizeY, 0x6C9D9E);
+	draw_rect(playerPaddle->getPosition().x, playerPaddle->getPosition().y
+		, playerPaddle->getHalfSizes().x, playerPaddle->getHalfSizes().y, playerPaddle->getColor());
 }

@@ -45,3 +45,23 @@ void GameArtefact::setAcceleration(float acceleration_x, float acceleration_y)
 	this->acceleration.x = acceleration_x;
 	this->acceleration.y = acceleration_y;
 }
+
+Vector2D GameArtefact::getPosition()
+{
+	return position;
+}
+
+Vector2D GameArtefact::getSpeed()
+{
+	return speed;
+}
+
+Vector2D GameArtefact::getAcceleration()
+{
+	return acceleration;
+}
+
+u32 GameArtefact::getColor()
+{
+	return color;
+}
