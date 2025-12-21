@@ -1,9 +1,10 @@
 #include "Paddle.h"
 
-Paddle::Paddle(float position_x, float position_y, u32 color, float frictionPaddle, float influenceFactorPaddle) : GameArtefact(position_x, position_y, color)
+Paddle::Paddle(float position_x, float position_y, u32 color, float frictionPaddle, float influenceFactorPaddle, float increaseHitFactor) : GameArtefact(position_x, position_y, color)
 {
 	this->friction = frictionPaddle;
 	this->influenceFactor = influenceFactorPaddle;
+	this->increaseHitFactor = increaseHitFactor;
 	addTag("paddle");
 }
 
@@ -47,4 +48,14 @@ Vector2D Paddle::getHalfSizes()
 float Paddle::getInfluenceFactor()
 {
 	return this->influenceFactor;
+}
+
+float Paddle::getIncreaseHitFactor()
+{
+	return this->increaseHitFactor;
+}
+
+void Paddle::setIncreaseHitFactor(float increaseHitFactor)
+{
+	this->increaseHitFactor = increaseHitFactor;
 }

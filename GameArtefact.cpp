@@ -36,8 +36,8 @@ void GameArtefact::setPosition(float position_x, float position_y)
 
 void GameArtefact::setSpeed(float speed_x, float speed_y)
 {
-	this->speed.x = speed_x;
-	this->speed.y = speed_y;
+	this->speed.x = (speed_x < speedLimit) ? speed_x : speedLimit;
+	this->speed.y = (speed_y < speedLimit) ? speed_y : speedLimit;
 }
 
 void GameArtefact::setAcceleration(float acceleration_x, float acceleration_y)

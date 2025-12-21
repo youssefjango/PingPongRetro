@@ -9,12 +9,18 @@
 
 
 Paddle* playerPaddle;
+Paddle* enemyPaddle;
+std::vector<Paddle*> paddlesList;
 Ball* ball;
 
 //Where all actors of the scene are initialized
 internal void initializeActors() {
 	playerPaddle = new Paddle(player_HorizontalPosition, player_StartingVerticalPosition
-		, player_Color, friction, influenceFactor);
+		, player_Color, initfriction, influenceFactor, 2.0f);
+	enemyPaddle = new Paddle(enemy_HorizontalPosition, enemy_StartingVerticalPosition
+		, enemy_Color, initfriction, influenceFactor, 2.0f);
+	paddlesList.push_back(playerPaddle);
+	paddlesList.push_back(enemyPaddle);
 	ball = new Ball(originalBallX, originalBallY, ballColor, ballRadius);
 	ball->setSpeed(initialBallSpeedX, initialBallSpeedY);
 }
@@ -42,7 +48,7 @@ bool isCollidingWithPaddle(Ball* b, Paddle* p) {
 }
 
 //to be added as a function of the class ball in the futur.
-void handleBall(Ball* b, Paddle* p,float dt) {
+void handleBall(Ball* b, std::vector<Paddle*> paddles,float dt) {
 	b->setPosition(b->getPosition().x + b->getSpeed().x * dt, b->getPosition().y + b->getSpeed().y * dt);
 
 	if (b->getPosition().y + b->getRadius() > arenaHalfSizeY) {
@@ -53,10 +59,16 @@ void handleBall(Ball* b, Paddle* p,float dt) {
 		b->setPosition(b->getPosition().x, -arenaHalfSizeY + b->getRadius());
 		b->setSpeed(b->getSpeed().x, -b->getSpeed().y);
 	}
-
-	if (isCollidingWithPaddle(b, p)) {
-		b->setPosition(p->getPosition().x + p->getHalfSizes().x + b->getRadius(), b->getPosition().y);
-		b->setSpeed(-b->getSpeed().x, p->getInfluenceFactor() * p->getSpeed().y);
+	for (Paddle* p : paddles) {
+		if (isCollidingWithPaddle(b, p)) {
+			Vector2D paddlePosition = p->getPosition();
+			Vector2D ballPosition = b->getPosition();
+			float newBallXPosition = (b->getSpeed().x > 0) ? 
+				p->getPosition().x - p->getHalfSizes().x - b->getRadius() : 
+				p->getPosition().x + p->getHalfSizes().x + b->getRadius();
+			b->setPosition(newBallXPosition, b->getPosition().y);
+			b->setSpeed(-b->getSpeed().x * p->getIncreaseHitFactor(), p->getInfluenceFactor() * p->getSpeed().y);
+		}
 	}
 
 }
@@ -76,10 +88,10 @@ internal void simulate_game(Input* input, float dt) {
 	//draw_rect(80, 0, 2.5, 12, 0x6C9D9E);
 	
 	//ball side
-	handleBall(ball, playerPaddle, dt);
+	handleBall(ball, paddlesList, dt);
 	
 	
-	
+	handlePaddle(enemyPaddle, dt);
 	handlePaddle(playerPaddle, dt);
 	
 	
@@ -90,9 +102,12 @@ internal void simulate_game(Input* input, float dt) {
 	if (ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * 1.5f || ball->getPosition().x < -arenaHalfSizeX - ball->getRadius() * RESPAWN_OFFSET_FACTOR) {
 		//or to be split to take into account who won in future
 		ball->setPosition(originalBallX, originalBallY);
-		ball->setSpeed(-ball->getSpeed().x, initialBallSpeedY);
+		//get the sign of the speed and flip it in order to send the ball to the winning round player
+		ball->setSpeed(((ball->getSpeed().x > 0) - (ball->getSpeed().x <= 0)) * -1 * initialBallSpeedX, initialBallSpeedY);
 	}
 
 	draw_rect(playerPaddle->getPosition().x, playerPaddle->getPosition().y
 		, playerPaddle->getHalfSizes().x, playerPaddle->getHalfSizes().y, playerPaddle->getColor());
+	draw_rect(enemyPaddle->getPosition().x, enemyPaddle->getPosition().y
+		, enemyPaddle->getHalfSizes().x, enemyPaddle->getHalfSizes().y, enemyPaddle->getColor());
 }
