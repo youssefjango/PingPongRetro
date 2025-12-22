@@ -59,3 +59,13 @@ void Paddle::setIncreaseHitFactor(float increaseHitFactor)
 {
 	this->increaseHitFactor = increaseHitFactor;
 }
+
+float Paddle::getScore()
+{
+	return this->score;
+}
+
+void Paddle::incrementScore()
+{
+	this->score++;
+}

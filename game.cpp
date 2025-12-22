@@ -104,10 +104,19 @@ internal void simulate_game(Input* input, float dt) {
 		ball->setPosition(originalBallX, originalBallY);
 		//get the sign of the speed and flip it in order to send the ball to the winning round player
 		ball->setSpeed(((ball->getSpeed().x > 0) - (ball->getSpeed().x <= 0)) * -1 * initialBallSpeedX, initialBallSpeedY);
+		if (ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * 1.5f) {
+			playerPaddle->incrementScore();
+		}
+		else {
+			enemyPaddle->incrementScore();
+		}
 	}
 
 	draw_rect(playerPaddle->getPosition().x, playerPaddle->getPosition().y
 		, playerPaddle->getHalfSizes().x, playerPaddle->getHalfSizes().y, playerPaddle->getColor());
 	draw_rect(enemyPaddle->getPosition().x, enemyPaddle->getPosition().y
 		, enemyPaddle->getHalfSizes().x, enemyPaddle->getHalfSizes().y, enemyPaddle->getColor());
+	draw_number(playerPaddle->getScore(), -10, 40, 1.f, 0xbbffbb);
+	draw_number(enemyPaddle->getScore(), 10, 40, 1.f, 0xbbffbb);
+
 }

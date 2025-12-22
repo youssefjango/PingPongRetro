@@ -9,6 +9,7 @@ private:
 	float friction = 10.0f;
 	//float player_HorizontalPosition = -80.0f;  now we will use position.x
 	float influenceFactor = 1.0f;
+	float score = 0;
 
 	float increaseHitFactor;
 public:
@@ -23,6 +24,8 @@ public:
 	float getInfluenceFactor();
 	float getIncreaseHitFactor();
 	void setIncreaseHitFactor(float increaseHitFactor);
+	float getScore();
+	void incrementScore();
 
 	
 };
