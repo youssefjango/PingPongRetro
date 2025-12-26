@@ -79,7 +79,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 		performance_freq = (float)perf.QuadPart;
 
 	}
-	initializeActors();
+	initializeMenu();
 	while (isRunning) {
 		MSG message;
 

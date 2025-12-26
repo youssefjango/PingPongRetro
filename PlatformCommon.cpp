@@ -1,9 +1,11 @@
+#pragma once
 struct Button_State {
 	bool is_down;
 	bool changed;
 };
 
-enum {
+enum Controls {
+	UNDEFINED,
 	//player 1
 	BUTTON_UP,
 	BUTTON_DOWN,

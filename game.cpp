@@ -10,12 +10,17 @@
 enum GameMode {
 	GM_Menu,
 	GM_LevelMenu,
+	GM_AIOption,
 	GM_Gameplay
 };
 GameMode currentGM = GM_Menu;
 
-Paddle* playerPaddle;
-Paddle* enemyPaddle;
+Paddle* mainPlayerPaddle;
+//second here means second teamate of the main player
+Paddle* optionalSecondPaddle;
+Paddle* mainEnemyPaddle;
+//fourth here means second teamate of the main enemy
+Paddle* optionalFourthPaddle;
 std::vector<Paddle*> paddlesList;
 Ball* ball;
 
@@ -25,7 +30,7 @@ std::vector<Button*> buttonsPage2;
 
 Button* current;
 //Where all actors of the scene are initialized
-internal void initializeActors() {
+internal void initializeMenu() {
 	Button* playBtn = new Button(playButton_Position.x, playButton_Position.y, hoverColor, firstPageButton_HalfSize, playTxt);
 	current = playBtn;
 	Button* quitBtn = new Button(quitButton_Position.x, quitButton_Position.y, defaultColor, firstPageButton_HalfSize, quitTxt);
@@ -35,6 +40,7 @@ internal void initializeActors() {
 	
 	Button* P2VEButton = new Button(P2VEButton_Position.x, P2VEButton_Position.y, defaultColor, secondPageButton_HalfSize, P2VETxt);
 	
+
 	Button* P2VE2Button = new Button(P2VE2Button_Position.x, P2VE2Button_Position.y, defaultColor, secondPageButton_HalfSize, P2VE2Txt);
 	
 	Button* PVE2Button = new Button(PVE2Button_Position.x, PVE2Button_Position.y, defaultColor, secondPageButton_HalfSize, PVE2Txt);
@@ -58,19 +64,6 @@ internal void initializeActors() {
 	buttonsPage2.push_back(PVPButton);
 	buttonsPage2.push_back(P2VPButton);
 	buttonsPage2.push_back(P2VP2Button);
-	
-	
-	
-	playerPaddle = new Paddle(player_HorizontalPosition, player_StartingVerticalPosition
-		, player_Color, initfriction, influenceFactor, 1.2f);
-	enemyPaddle = new Paddle(enemy_HorizontalPosition, enemy_StartingVerticalPosition
-		, enemy_Color, initfriction, influenceFactor, 1.2f);
-	paddlesList.push_back(playerPaddle);
-	paddlesList.push_back(enemyPaddle);
-	ball = new Ball(originalBallX, originalBallY, ballColor, ballRadius);
-	ball->setSpeed(initialBallSpeedX, initialBallSpeedY);
-
-
 }
 
 //to be added as a function of the class Paddle in the futur.
@@ -123,20 +116,15 @@ void handleBall(Ball* b, std::vector<Paddle*> paddles,float dt) {
 }
 
 internal void gameplay(Input* input, float dt) {
-	playerPaddle->setAcceleration(0.0f);
 
-	if (is_down(BUTTON_UP)) playerPaddle->setAcceleration(playerPaddle->getAcceleration().y + 2000.0f);
-	else if (is_down(BUTTON_DOWN)) playerPaddle->setAcceleration(playerPaddle->getAcceleration().y - 2000.0f);
-
-	//mode can be changed in the main menu
-	enemyPaddle->respondToEnvirnment(ball, Hardcore);
+	//mode can be changed in the main men
 
 	//ball side
 	handleBall(ball, paddlesList, dt);
 
 
-	handlePaddle(enemyPaddle, dt);
-	handlePaddle(playerPaddle, dt);
+	
+	
 
 
 	//Drawing ball's State
@@ -145,7 +133,7 @@ internal void gameplay(Input* input, float dt) {
 	//GameMode Side
 	if (ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * RESPAWN_OFFSET_FACTOR || ball->getPosition().x < -arenaHalfSizeX - ball->getRadius() * RESPAWN_OFFSET_FACTOR) {
 
-		ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * RESPAWN_OFFSET_FACTOR ? playerPaddle->incrementScore() : enemyPaddle->incrementScore();
+		ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * RESPAWN_OFFSET_FACTOR ? mainPlayerPaddle->incrementScore() : mainEnemyPaddle->incrementScore();
 
 		ball->setPosition(originalBallX, originalBallY);
 		//get the sign of the speed and flip it in order to send the ball to the winning round player
@@ -153,20 +141,37 @@ internal void gameplay(Input* input, float dt) {
 
 	}
 
-	//Drawing paddles' State
-	draw_rect(playerPaddle->getPosition().x, playerPaddle->getPosition().y
-		, playerPaddle->getHalfSizes().x, playerPaddle->getHalfSizes().y, playerPaddle->getColor());
-	draw_rect(enemyPaddle->getPosition().x, enemyPaddle->getPosition().y
-		, enemyPaddle->getHalfSizes().x, enemyPaddle->getHalfSizes().y, enemyPaddle->getColor());
+	int blueScore = 0;
+	int redScore = 0;
+	for (Paddle* p : paddlesList) {
+		if (p->ContainsTag("blue")) {
+			blueScore += p->getScore();
+		}
+		else if (p->ContainsTag("red")) {
+			redScore += p->getScore();
+		}
+		if (p->getDownControls() != UNDEFINED || p->getDownControls() != UNDEFINED) {
+			p->setAcceleration(0.0f);
+			if (is_down(p->getDownControls())) p->setAcceleration(p->getAcceleration().y + 2000.0f);
+			else if (is_down(p->getDownControls())) p->setAcceleration(p->getAcceleration().y - 2000.0f);
+		}
+		else {
+			p->respondToEnvirnment(ball);
+		}
+		handlePaddle(p, dt);
+		//Drawing paddles' State
+		draw_rect(p->getPosition().x, p->getPosition().y
+		, p->getHalfSizes().x, p->getHalfSizes().y, p->getColor());
+	}
 
 
-	draw_number(playerPaddle->getScore(), -10, 40, 1.f, 0xbbffbb);
-	draw_number(enemyPaddle->getScore(), 10, 40, 1.f, 0xbbffbb);
+	draw_number(blueScore, -10, 40, 1.f, 0x2C4E72);
+	draw_number(redScore, 10, 40, 1.f, 0xB5514D);
 }
 
 int hoverButtonIndex = 0;
 
-internal void navigation(Input* input, std::vector<Button*> buttons) {
+internal void navigate(Input* input, std::vector<Button*> buttons) {
 	if (pressed(BUTTON_LEFT)) {
 		hoverButtonIndex = (hoverButtonIndex - 1) % buttons.size();
 		if (current) {
@@ -187,6 +192,7 @@ internal void navigation(Input* input, std::vector<Button*> buttons) {
 
 	}
 }
+
 internal void displayButtons(std::vector<Button*> buttons) {
 	for (int i = 0; i < buttons.size(); i++) {
 			draw_rect(buttons.at(i)->getPosition().x, buttons.at(i)->getPosition().y
@@ -194,11 +200,12 @@ internal void displayButtons(std::vector<Button*> buttons) {
 		}
 }
 internal void mainMenu(Input* input) {
-	navigation(input, buttonsPage1);
+	navigate(input, buttonsPage1);
 	if (pressed(BUTTON_ENTER)) {
 		if (current->ContainsTag("play")) {
 			currentGM = GM_LevelMenu;
-			current = buttonsPage2.at(0);
+			hoverButtonIndex = 0;
+			current = buttonsPage2.at(hoverButtonIndex);
 			current->setColor(hoverColor);
 		}
 		else if (current->ContainsTag("quit")) {
@@ -207,11 +214,84 @@ internal void mainMenu(Input* input) {
 	}
 	displayButtons(buttonsPage1);
 }
+
+internal void initializeActors(bool isAIMainEnemy) {
+	mainPlayerPaddle = new Paddle(player_HorizontalPosition, player_StartingVerticalPosition
+		, player_Color, initfriction, influenceFactor, 1.2f);
+	mainPlayerPaddle->setControls(BUTTON_W, BUTTON_S);
+	mainPlayerPaddle->addTag("blue");
+	mainEnemyPaddle = new Paddle(enemy_HorizontalPosition, enemy_StartingVerticalPosition
+		, enemy_Color, initfriction, influenceFactor, 1.2f);
+	if (isAIMainEnemy) mainEnemyPaddle->setBrain();
+	else mainEnemyPaddle->setControls(BUTTON_UP, BUTTON_DOWN);
+	mainEnemyPaddle->addTag("red");
+	paddlesList.push_back(mainPlayerPaddle);
+	paddlesList.push_back(mainEnemyPaddle);
+	ball = new Ball(originalBallX, originalBallY, ballColor, ballRadius);
+	ball->setSpeed(initialBallSpeedX, initialBallSpeedY);
+}
+internal void initializeOptionalPaddles(bool isSecond ,bool isFourth, bool isSecondAI, bool isThirdAI, bool isFourthAI) {
+	optionalSecondPaddle = isSecond ? new Paddle(secondPlayer_HorizontalPosition, player_StartingVerticalPosition
+		, player_Color, initfriction, influenceFactor, 1.2f) : nullptr;
+	if (isSecond) {
+		optionalSecondPaddle->addTag("blue");
+		paddlesList.push_back(optionalSecondPaddle);
+	}
+	optionalFourthPaddle = isFourth ? new Paddle(fourthPlayer_HorizontalPosition, player_StartingVerticalPosition
+		, enemy_Color, initfriction, influenceFactor, 1.2f) : nullptr;
+	if (isFourth) {
+		optionalFourthPaddle->addTag("red");
+		paddlesList.push_back(optionalFourthPaddle);
+	}
+
+}
+
 internal void levelMenu(Input* input) {
-	navigation(input, buttonsPage2);
+	navigate(input, buttonsPage2);
+	if (pressed(BUTTON_ENTER)) {
+		
+
+		//default minimum actors that will be initialized
+		initializeActors();
+		initializeOptionalPaddles(current->getText() == P2VETxt || current->getText() == P2VE2Txt 
+			|| current->getText() == P2VPTxt || current->getText() == P2VP2Txt
+			, current->getText() == P2VE2Txt || current->getText() == PVE2Txt || current->getText() == P2VP2Txt);
+
+		currentGM = GM_Gameplay;
+		current->setColor(defaultColor);
+		current = nullptr;
+		hoverButtonIndex = 0;
+	}
 	displayButtons(buttonsPage2);
 
 }
+/*
+The Following starting code is for a future implementation of the selection of each AI mode of the paddles, for now it will
+be a random one for each paddle
+if (current->getText() == PVETxt) {
+			currentGM = GM_AIOption;
+		}
+		else if (current->getText() == P2VETxt) {
+			currentGM = GM_AIOption;
+		}
+		else if (current->getText() == P2VE2Txt) {
+			currentGM = GM_AIOption;
+		}
+		else if (current->getText() == PVE2Txt) {
+			currentGM = GM_AIOption;
+		}
+		else if (current->getText() == PVPTxt) {
+			currentGM = GM_Gameplay;
+		}
+		else if (current->getText() == P2VPTxt) {
+			currentGM = GM_Gameplay;
+		}
+		else if (current->getText() == P2VP2Txt) {
+			currentGM = GM_Gameplay;
+		}*/
+
+
+
 internal void simulate_game(Input* input, float dt) {
 	//background
 	clearScreen(0x0E2445);

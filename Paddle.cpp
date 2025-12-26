@@ -6,9 +6,36 @@ Paddle::Paddle(float position_x, float position_y, u32 color, float frictionPadd
 	this->friction = frictionPaddle;
 	this->influenceFactor = influenceFactorPaddle;
 	this->increaseHitFactor = (increaseHitFactor >= 1.0f) ? increaseHitFactor : 1;
+	this->upControl = UNDEFINED;
+	this->downControl = UNDEFINED;
 	addTag("paddle");
 	//for random implementation
 	srand(time(0));
+}
+
+void Paddle::setBrain()
+{
+	int random = 4.0f * (((double)rand()) / RAND_MAX);
+	brain = random == 0 ? Easy
+		: random == 1 ? Medium
+		: random == 2 ? Difficult
+		: Hardcore;
+}
+
+void Paddle::setControls(Controls up, Controls down)
+{
+	this->upControl = up;
+	this->downControl = down;
+}
+
+Controls Paddle::getUpControls()
+{
+	return this->upControl;
+}
+
+Controls Paddle::getDownControls()
+{
+	return this->downControl;
 }
 
 void Paddle::setFriction(float friction)
@@ -73,9 +100,9 @@ void Paddle::incrementScore()
 	this->score++;
 }
 
-void Paddle::respondToEnvirnment(Ball* ball, Difficulty mode)
+void Paddle::respondToEnvirnment(Ball* ball)
 {
-	switch (mode) {
+	switch (brain) {
 	case Easy:
 		acceleration.y = 100.0f * (ball->getPosition().y - position.y);
 		break;

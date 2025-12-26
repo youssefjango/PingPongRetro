@@ -1,4 +1,5 @@
 #pragma once
+#include "platformCommon.cpp"
 #include "GameArtefact.h"
 #include "Ball.h"
 
@@ -20,10 +21,17 @@ private:
 	//float player_HorizontalPosition = -80.0f;  now we will use position.x
 	float influenceFactor = 1.0f;
 	float score = 0;
-
+	Difficulty brain;
 	float increaseHitFactor;
+	Controls upControl;
+	Controls downControl;
 public:
 	Paddle(float position_x, float position_y, u32 color, float frictionPaddle, float influenceFactorPaddle, float increaseHitFactor);
+	void setBrain();
+	void setControls(Controls up, Controls down);
+	Controls getUpControls();
+	Controls getDownControls();
+
 	void setFriction(float friction);
 	void setHalfSizes(float half_x, float half_y);
 	void setAcceleration(float Yacceleration);
@@ -36,7 +44,7 @@ public:
 	void setIncreaseHitFactor(float increaseHitFactor);
 	float getScore();
 	void incrementScore();
-	void respondToEnvirnment(Ball *ball, Difficulty mode);
+	void respondToEnvirnment(Ball *ball);
 
 	
 };
