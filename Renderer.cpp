@@ -33,6 +33,34 @@ internal void draw_rect_pxl(int x0, int y0, int x1, int y1, u32 color) {
 }
 
 global_variable float render_scale = 0.01f;
+
+/*internal void draw_circle(int x, int y, int radius, u32 color) {
+	x *= renderState.height * render_scale;
+	y *= renderState.height * render_scale;
+	radius *= renderState.height * render_scale;
+	radius *= renderState.height * render_scale;
+
+	x += renderState.width / 2.f;
+	y += renderState.height / 2.f;
+
+	int minX = clamp(0, x - radius, renderState.width - 1);
+	int maxX = clamp(0, x + radius, renderState.width - 1);
+	int minY = clamp(0, y - radius, renderState.height - 1);
+	int maxY = clamp(0, y + radius, renderState.height - 1);
+	u32* pixel = (u32*)renderState.buffer_memory;
+	for (int i = minY; i <= maxY; i++) {
+		for (int j = minX; j <= maxX; j++) {
+			int dx = j - x;
+			int dy = i - y;
+			if (dx * dx + dy * dy <= radius * radius) {
+				pixel[i * renderState.width + j] = color;
+			}
+		}
+	}
+
+
+}*/
+
 internal void draw_rect(float x, float y, float half_size_x, float half_size_y, u32 color) {
 	
 	//relative to width/height

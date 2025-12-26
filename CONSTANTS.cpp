@@ -27,3 +27,40 @@ float initialBallSpeedX = 100.0f;
 float const originalBallX = 0.0f, originalBallY = 0.0f;
 u32 ballColor = 0x00ff22;
 float RESPAWN_OFFSET_FACTOR = 1.5f;
+
+
+
+//Buttons Data
+u32 hoverColor = 0x6c25be;
+u32 defaultColor= 0x2596be;
+Vector2D firstPageButton_HalfSize = {25.0f, 10.0f};
+const char* playTxt = "play";
+Vector2D playButton_Position = { 30.0f, 15.0f };
+const char* quitTxt = "quit";
+Vector2D quitButton_Position = { -30.0f, -15.0f };
+
+
+
+Vector2D secondPageButton_HalfSize = {10.0f, 3.0f};
+const char* PVETxt = "PVE";
+Vector2D PVEButton_Position = {-50.0f, 0.0f};
+
+const char* P2VETxt = "2PVE";
+Vector2D P2VEButton_Position = { -25.0f, 0.0f };
+
+const char* P2VE2Txt = "P2VE2";
+Vector2D P2VE2Button_Position = { 25.0f, 0.0f };
+
+const char* PVE2Txt = "PVE2";
+Vector2D PVE2Button_Position = { 50.0f, 0.0f };
+
+const char* PVPTxt = "PVP";
+Vector2D PVPButton_Position = { -50.0f, -7.5f };
+
+const char* P2VPTxt = "P2VP";
+Vector2D P2VPButton_Position = { -25.0f, -7.5f };
+
+const char* P2VP2Txt = "P2VP2";
+Vector2D P2VP2Button_Position = { 25.0f, -7.5f };
+
+

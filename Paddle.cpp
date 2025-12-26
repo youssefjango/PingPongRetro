@@ -1,11 +1,14 @@
 #include "Paddle.h"
+#include <time.h>
 
 Paddle::Paddle(float position_x, float position_y, u32 color, float frictionPaddle, float influenceFactorPaddle, float increaseHitFactor) : GameArtefact(position_x, position_y, color)
 {
 	this->friction = frictionPaddle;
 	this->influenceFactor = influenceFactorPaddle;
-	this->increaseHitFactor = increaseHitFactor;
+	this->increaseHitFactor = (increaseHitFactor >= 1.0f) ? increaseHitFactor : 1;
 	addTag("paddle");
+	//for random implementation
+	srand(time(0));
 }
 
 void Paddle::setFriction(float friction)
@@ -69,3 +72,27 @@ void Paddle::incrementScore()
 {
 	this->score++;
 }
+
+void Paddle::respondToEnvirnment(Ball* ball, Difficulty mode)
+{
+	switch (mode) {
+	case Easy:
+		acceleration.y = 100.0f * (ball->getPosition().y - position.y);
+		break;
+	case Medium:
+		acceleration.y = 900.0f * (ball->getPosition().y - position.y);
+		break;
+	case Difficult:
+		(ball->getPosition().y > position.y) ? acceleration.y += 1400 
+			: (ball->getPosition().y < position.y) ? acceleration.y -= 1400 : acceleration.y = 0;
+		break;
+	case Hardcore:
+		position.y = ball->getPosition().y + (((double) rand()) / RAND_MAX);
+		break;
+	}
+	if (abs(position.y - ball->getPosition().y) <= 1e-10) {
+		acceleration.y = 10000.0f * (((double)rand()) / RAND_MAX);
+	}
+}
+
+

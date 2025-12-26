@@ -10,12 +10,13 @@ protected:
 	Vector2D speed;
 	Vector2D acceleration;
 	std::unordered_set<std::string> tags;
-	const float speedLimit = 600.0f;
+	const float speedLimit = 400.0f;
 	u32 color;
 public:
 	GameArtefact(float position_x, float position_y, u32 color);
 	GameArtefact(float position_x, float position_y);
 	void addTag(std::string tag);
+	bool ContainsTag(std::string tag);
 	bool removeTag(std::string tag);
 	void UpdatePosition(float dt);
 	void setPosition(float position_x, float position_y);
@@ -25,6 +26,8 @@ public:
 	Vector2D getSpeed();
 	Vector2D getAcceleration();
 	u32 getColor();
+
+	void setColor(u32 color);
 
 };
 

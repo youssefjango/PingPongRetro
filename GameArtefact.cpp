@@ -15,7 +15,11 @@ GameArtefact::GameArtefact(float position_x, float position_y)
 
 void GameArtefact::addTag(std::string tag)
 {
-	auto b = this->tags.insert(tag);
+	this->tags.insert(tag);
+}
+
+bool GameArtefact::ContainsTag(std::string tag) {
+	return tags.count(tag) > 0;
 }
 
 bool GameArtefact::removeTag(std::string tag)
@@ -64,4 +68,7 @@ Vector2D GameArtefact::getAcceleration()
 u32 GameArtefact::getColor()
 {
 	return color;
+}
+void GameArtefact::setColor(u32 color) {
+	this->color = color;
 }

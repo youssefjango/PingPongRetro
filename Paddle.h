@@ -1,5 +1,15 @@
 #pragma once
 #include "GameArtefact.h"
+#include "Ball.h"
+
+
+enum Difficulty {
+	Easy,
+	Medium,
+	Difficult,
+	Hardcore
+};
+
 class Paddle : public GameArtefact
 {
 private:
@@ -26,6 +36,7 @@ public:
 	void setIncreaseHitFactor(float increaseHitFactor);
 	float getScore();
 	void incrementScore();
+	void respondToEnvirnment(Ball *ball, Difficulty mode);
 
 	
 };
