@@ -15,11 +15,11 @@ Paddle::Paddle(float position_x, float position_y, u32 color, float frictionPadd
 
 void Paddle::setBrain()
 {
-	int random = 4.0f * (((double)rand()) / RAND_MAX);
-	brain = random == 0 ? Easy
-		: random == 1 ? Medium
-		: random == 2 ? Difficult
-		: Hardcore;
+	int random = std::rand() % 6;
+	brain = random == 0 ? Hardcore
+		: random == 1 ? Difficult
+		: random == 2 || random == 3 ? Medium
+		: Easy;
 }
 
 void Paddle::setControls(Controls up, Controls down)
@@ -104,17 +104,17 @@ void Paddle::respondToEnvirnment(Ball* ball)
 {
 	switch (brain) {
 	case Easy:
-		acceleration.y = 100.0f * (ball->getPosition().y - position.y);
+		acceleration.y = (ball->getSpeed().x * position.x > 0) ? 100.0f * (ball->getPosition().y - position.y) : 0.0f;
 		break;
 	case Medium:
-		acceleration.y = 900.0f * (ball->getPosition().y - position.y);
+		acceleration.y = 500.0f * (ball->getPosition().y - position.y);
 		break;
 	case Difficult:
 		(ball->getPosition().y > position.y) ? acceleration.y += 1400 
 			: (ball->getPosition().y < position.y) ? acceleration.y -= 1400 : acceleration.y = 0;
 		break;
 	case Hardcore:
-		position.y = ball->getPosition().y + (((double) rand()) / RAND_MAX);
+		position.y = ball->getPosition().y;
 		break;
 	}
 	if (abs(position.y - ball->getPosition().y) <= 1e-10) {

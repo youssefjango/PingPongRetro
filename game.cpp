@@ -2,6 +2,7 @@
 #include "Ball.h"
 #include "CONSTANTS.cpp"
 #include "Button.h"
+#include <algorithm> 
 
 #define is_down(b) input->buttons[b].is_down
 #define pressed(b) (input->buttons[b].is_down && input->buttons[b].changed)
@@ -121,16 +122,10 @@ internal void gameplay(Input* input, float dt) {
 
 	//ball side
 	handleBall(ball, paddlesList, dt);
-
-
-	
-	
-
-
 	//Drawing ball's State
 	draw_rect(ball->getPosition().x, ball->getPosition().y, ball->getRadius(), ball->getRadius(), ball->getColor());
 
-	//GameMode Side
+	//Win/Loss Event
 	if (ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * RESPAWN_OFFSET_FACTOR || ball->getPosition().x < -arenaHalfSizeX - ball->getRadius() * RESPAWN_OFFSET_FACTOR) {
 
 		ball->getPosition().x > arenaHalfSizeX + ball->getRadius() * RESPAWN_OFFSET_FACTOR ? mainPlayerPaddle->incrementScore() : mainEnemyPaddle->incrementScore();
@@ -138,7 +133,9 @@ internal void gameplay(Input* input, float dt) {
 		ball->setPosition(originalBallX, originalBallY);
 		//get the sign of the speed and flip it in order to send the ball to the winning round player
 		ball->setSpeed(((ball->getSpeed().x > 0) - (ball->getSpeed().x <= 0)) * -1 * initialBallSpeedX, initialBallSpeedY);
-
+		for (Paddle* p : paddlesList) {
+			p->setPosition(p->getPosition().x, 0.0f);
+		}
 	}
 
 	int blueScore = 0;
@@ -152,7 +149,7 @@ internal void gameplay(Input* input, float dt) {
 		}
 		if (p->getDownControls() != UNDEFINED || p->getDownControls() != UNDEFINED) {
 			p->setAcceleration(0.0f);
-			if (is_down(p->getDownControls())) p->setAcceleration(p->getAcceleration().y + 2000.0f);
+			if (is_down(p->getUpControls())) p->setAcceleration(p->getAcceleration().y + 2000.0f);
 			else if (is_down(p->getDownControls())) p->setAcceleration(p->getAcceleration().y - 2000.0f);
 		}
 		else {
@@ -195,8 +192,11 @@ internal void navigate(Input* input, std::vector<Button*> buttons) {
 
 internal void displayButtons(std::vector<Button*> buttons) {
 	for (int i = 0; i < buttons.size(); i++) {
-			draw_rect(buttons.at(i)->getPosition().x, buttons.at(i)->getPosition().y
-				, buttons.at(i)->getHalfSizes().x, buttons.at(i)->getHalfSizes().y, buttons.at(i)->getColor());
+		std::string text = buttons.at(i)->getText();
+		std::transform(text.begin(), text.end(), text.begin(), ::toupper);
+		draw_text(text.c_str(), buttons.at(i)->getPosition().x, buttons.at(i)->getPosition().y
+			, buttons.at(i)->getHalfSizes().x, buttons.at(i)->getHalfSizes().y, buttons.at(i)->getColor());
+		
 		}
 }
 internal void mainMenu(Input* input) {
@@ -220,27 +220,32 @@ internal void initializeActors(bool isAIMainEnemy) {
 		, player_Color, initfriction, influenceFactor, 1.2f);
 	mainPlayerPaddle->setControls(BUTTON_W, BUTTON_S);
 	mainPlayerPaddle->addTag("blue");
+
 	mainEnemyPaddle = new Paddle(enemy_HorizontalPosition, enemy_StartingVerticalPosition
 		, enemy_Color, initfriction, influenceFactor, 1.2f);
-	if (isAIMainEnemy) mainEnemyPaddle->setBrain();
-	else mainEnemyPaddle->setControls(BUTTON_UP, BUTTON_DOWN);
+	(isAIMainEnemy) ? mainEnemyPaddle->setBrain() : mainEnemyPaddle->setControls(BUTTON_UP, BUTTON_DOWN);
 	mainEnemyPaddle->addTag("red");
 	paddlesList.push_back(mainPlayerPaddle);
 	paddlesList.push_back(mainEnemyPaddle);
 	ball = new Ball(originalBallX, originalBallY, ballColor, ballRadius);
 	ball->setSpeed(initialBallSpeedX, initialBallSpeedY);
 }
-internal void initializeOptionalPaddles(bool isSecond ,bool isFourth, bool isSecondAI, bool isThirdAI, bool isFourthAI) {
+internal void initializeOptionalPaddles(bool isSecond ,bool isFourth, bool isSecondAI, bool isFourthAI) {
 	optionalSecondPaddle = isSecond ? new Paddle(secondPlayer_HorizontalPosition, player_StartingVerticalPosition
 		, player_Color, initfriction, influenceFactor, 1.2f) : nullptr;
 	if (isSecond) {
 		optionalSecondPaddle->addTag("blue");
+
+		isSecondAI ? optionalSecondPaddle->setBrain() : optionalSecondPaddle->setControls(BUTTON_F, BUTTON_V);
 		paddlesList.push_back(optionalSecondPaddle);
+		
 	}
 	optionalFourthPaddle = isFourth ? new Paddle(fourthPlayer_HorizontalPosition, player_StartingVerticalPosition
 		, enemy_Color, initfriction, influenceFactor, 1.2f) : nullptr;
+
 	if (isFourth) {
 		optionalFourthPaddle->addTag("red");
+		isFourthAI ? optionalFourthPaddle->setBrain() : optionalFourthPaddle->setControls(BUTTON_O, BUTTON_L);
 		paddlesList.push_back(optionalFourthPaddle);
 	}
 
@@ -252,10 +257,13 @@ internal void levelMenu(Input* input) {
 		
 
 		//default minimum actors that will be initialized
-		initializeActors();
-		initializeOptionalPaddles(current->getText() == P2VETxt || current->getText() == P2VE2Txt 
+		initializeActors(current->getText() == P2VETxt || current->getText() == PVETxt 
+			|| current->getText() == P2VE2Txt || current->getText() == PVE2Txt);
+		initializeOptionalPaddles(current->getText() == P2VETxt || current->getText() == P2VE2Txt
 			|| current->getText() == P2VPTxt || current->getText() == P2VP2Txt
-			, current->getText() == P2VE2Txt || current->getText() == PVE2Txt || current->getText() == P2VP2Txt);
+			, current->getText() == P2VE2Txt || current->getText() == PVE2Txt || current->getText() == P2VP2Txt
+			, false
+			, current->getText() == P2VE2Txt || current->getText() == PVE2Txt);
 
 		currentGM = GM_Gameplay;
 		current->setColor(defaultColor);
@@ -294,18 +302,24 @@ if (current->getText() == PVETxt) {
 
 internal void simulate_game(Input* input, float dt) {
 	//background
-	clearScreen(0x0E2445);
+	
 	//arena rectangle
-	draw_rect(0, 0, arenaHalfSizeX, arenaHalfSizeY, 0x000000);
+	
 
 	switch (currentGM) {
 	case GM_Gameplay:
+		clearScreen(0x7A0080);
+		draw_rect(0, 0, arenaHalfSizeX, arenaHalfSizeY, 0x000000);
 		gameplay(input, dt);
 		break;
 	case GM_Menu:
+		clearScreen(0x7A0080);
+		draw_rect(0, 0, arenaHalfSizeX, arenaHalfSizeY, 0x000000);
 		mainMenu(input);
 		break;
 	case GM_LevelMenu:
+		clearScreen(0x7A0080);
+		draw_rect(0, 0, arenaHalfSizeX, arenaHalfSizeY, 0x000000);
 		levelMenu(input);
 	}
 
